@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interest Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #calculator {
+            width: 300px;
+            margin: 0 auto;
+        }
+
+        #calculator input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        #result {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interest Calculator</h1>
+    <div id="calculator">
+        <input type="number" id="principal" placeholder="Principal amount" oninput="calculateInterest()">
+        <input type="number" id="rate" placeholder="Annual interest rate (%)" oninput="calculateInterest()">
+        <input type="number" id="time" placeholder="Time (years)" oninput="calculateInterest()">
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateInterest() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+            const time = parseFloat(document.getElementById('time').value);
+
+            if (!isNaN(principal) && !isNaN(rate) && !isNaN(time)) {
+                const interest = (principal * rate * time) / 100;
+                const totalAmount = principal + interest;
+
+                const resultElement = document.getElementById('result');
+                resultElement.innerHTML = `
+                    <p>Principal Amount: $${principal}</p>
+                    <p>Interest Rate: ${rate}%</p>
+                    <p>Time (Years): ${time}</p>
+                    <p>Interest Earned: $${interest.toFixed(2)}</p>
+                    <p>Total Amount: $${totalAmount.toFixed(2)}</p>
+                `;
+            } else {
+                const resultElement = document.getElementById('result');
+                resultElement.innerHTML = '';
+            }
+        }
+    </script>
+</body>
+</html>
