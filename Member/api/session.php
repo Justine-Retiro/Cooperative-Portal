@@ -5,7 +5,7 @@
     require_once __DIR__ . '/connection.php';
 
     // Check if the user is logged in, if not then redirect to login page
-    if(!isset($_SESSION["user_id"])){
+    if(!isset($_SESSION["user_id"]) || $_SESSION["loggedin"] !== true){
         header("Location: /coop/");
         exit;
     }
@@ -20,6 +20,8 @@
             $_SESSION['last_name'] = $row['last_name'];
         }
     } else {
-        echo "0 results";
+        // If no results, redirect to login.php
+        header("Location: /coop/");
+        exit;
     }
 ?>

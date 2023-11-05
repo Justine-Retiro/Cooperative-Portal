@@ -5,15 +5,38 @@ if (isset($_GET["account_number"]) && isset($_GET["loan_id"])) {
   
   // Retrieve the account details from the database and display them
   require_once $_SERVER['DOCUMENT_ROOT'] . "/coop/Admin/Repositories/api/connection.php";
-
   $query = "SELECT * FROM loan_applications WHERE account_number = ? AND loanNo = ?";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("ss", $account_number, $loan_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $data = $result->fetch_assoc(); // Fetch the data into an associative array
+  $stmt1 = $conn->prepare($query);
+  $stmt1->bind_param("ss", $account_number, $loan_id);
+  $stmt1->execute();
+  $result1 = $stmt1->get_result();
+  $data = $result1->fetch_assoc(); // Fetch the data into an associative array
+
+  // Fetch the loan amount
+  $loanAmount = $data['amount_before'];
+  $loanAfter = $data['amount_after'];
+  
+  // Calculate the due date (30 days from now)
+  // Calculate the due date based on loan term type and time to pay
+  if ($data['loan_term_Type'] === 'month/s') {
+      $dueDate = date('F d, Y', strtotime('+' . $data['time_pay'] . ' months'));
+  } else if ($data['loan_term_Type'] === 'year/s') {
+      $dueDate = date('F d, Y', strtotime('+' . $data['time_pay'] . ' years'));
+  } else {
+      // Default to 30 days if loan term type is not recognized
+      $dueDate = date('F d, Y', strtotime('+30 days'));
+  }
+  // Store the due date in a variable to pass it to the server side
+  $_SESSION['dueDate'] = $dueDate;
+  
+
+  
+  // Calculate the interest (3% per month)
+  $interest = $loanAmount * 0.05;
+
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -148,9 +171,61 @@ if (isset($_GET["account_number"]) && isset($_GET["loan_id"])) {
                   </ol>
                 </nav>
                 <h1>
-                  Members Repositories
+                  Member loan application
                 </h1>
                 <div class="row" style="margin-top: 2em;">
+                <!-- Table Trails -->
+                  <div class="col-lg-12 px-3">
+                    <h2>Loan user trails</h2>
+                    <div class="">
+                        <table class="table table-hover table-bordered table-fixed table-lock-height">
+                          <thead class="table-primary" >
+                            <tr>
+                                <th>#</th>
+                                <th class="fw-semibold">Loan ID</th>
+                                <th class="fw-semibold">Customer name</th>
+                                <th class="fw-semibold">Loan type</th>
+                                <th class="fw-semibold">Date of applying</th>
+                                <th class="fw-semibold">Loan borrowed</th>
+                                <th class="fw-semibold">Loan to pay</th>
+                                <th class="fw-semibold">Remarks</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                            <!-- You can fetch the user's loan data here and loop through it -->
+                            <?php
+                            $sql = "SELECT c.account_number, la.loanNo, la.customer_name, la.college, la.loan_type, 
+                            la.application_date, la.application_status, la.amount_before, la.amount_after, la.remarks
+                            FROM clients c
+                            INNER JOIN loan_applications la ON la.account_number = c.account_number
+                            WHERE c.account_number = ?";
+                            
+                            $stmt2 = $conn->prepare($sql);
+                            $stmt2->bind_param("s", $account_number);
+                            $stmt2->execute();
+                            $result2 = $stmt2->get_result();
+                            $counter = 1;
+
+                            if ($result2->num_rows > 0){
+                              while ($row = $result2->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . $counter . "</td>";
+                                echo "<td>" . $row["loanNo"] . "</td>";
+                                echo "<td>" . $row["customer_name"] . "</td>";
+                                echo "<td>" . $row["loan_type"] . "</td>";
+                                echo "<td>" . $row["application_date"] . "</td>";
+                                echo "<td>" . $row["amount_before"] . "</td>";
+                                echo "<td>" . $row["amount_after"] . "</td>";
+                                echo "<td>" . $row["remarks"] . "</td>";
+                                echo "</tr>";
+                                $counter++;
+                              }
+                            }
+                            ?>
+                          </tbody>
+                        </table>
+                    </div>
+                  </div>
                   <!-- Table -->
                   <div class="row">
                     <div class="col-lg-4">
@@ -225,7 +300,12 @@ if (isset($_GET["account_number"]) && isset($_GET["loan_id"])) {
                         </div>
                         <div class="mb-3">
                           <label for="amount">Loan Amount</label>  
-                          <input type="text" class="form-control" id="amount" placeholder="<?php echo $data['amount']; ?>" disabled readonly>
+                          <input type="text" class="form-control" id="amount" value="<?php echo $data['amount_before']; ?>" disabled readonly>
+                        </div>
+                        <div class="mb-3 float-end">
+                          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            More details
+                          </button>
                         </div>
                       </div>
                     <div class="col-lg-12">
@@ -258,6 +338,42 @@ if (isset($_GET["account_number"]) && isset($_GET["loan_id"])) {
                             </div>
                           </div>
                           <!-- End of Modal -->
+
+                          <!-- /Modal -->
+                          
+                          <!-- Button trigger modal -->
+                          
+
+                          <!-- Modal -->
+                          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h1 class="modal-title fs-5" id="exampleModalLabel">More details</h1>
+                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="loanActionForm" action="/coop/Admin/MemberLoan/api/processLoanAction.php" method="post">
+                                      <input type="hidden" name="dueDate" value="<?php echo $dueDate; ?>">
+                                      <input type="hidden" name="loanNo" value="<?php echo $data['loanNo']; ?>">
+                                      <input type="hidden" id="loanAction" name="action">
+                                  </form>
+                                  <p>Loan Amount: ₱ <?php echo number_format($loanAmount, 2, '.', ','); ?></p>
+                                  <p>Amount to pay: ₱ <?php echo number_format($loanAfter, 2, '.', ','); ?></p>
+                                  <p>Time to pay: <?php echo $data['time_pay'] . " " . $data['loan_term_Type'];?></p>
+                                  <p>End of dute date to pay: <?php echo $dueDate; ?></p>
+                                  <p>Interest: 5%</p>
+
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- /Modal -->
+
                         </div>
                         <br>
                         <div class="row">
@@ -292,11 +408,11 @@ $(document).ready(function() {
   var isLoanAccepted = "<?php echo $data['action_taken']; ?>";
 
   // Function to process the loan action
-  function processLoanAction(loanNo, action, buttonContainer) {
+  function processLoanAction(loanNo, action, dueDate, buttonContainer) {
     $.ajax({
       type: 'POST',
       url: '/coop/Admin/MemberLoan/api/processLoanAction.php',
-      data: { loanNo: loanNo, action: action },
+      data: { loanNo: loanNo, action: action, dueDate: dueDate }, // Include dueDate in the data sent
       success: function(response) {       
         // Redirect to /Admin/MemberLoan/loan.php
         window.location.href = '/coop/Admin/MemberLoan/loan.php';
@@ -317,16 +433,20 @@ $(document).ready(function() {
   // Add event listeners to the accept and reject buttons
   $('.accept-btn').click(function() {
     var loanNo = <?php echo $data['loanNo']; ?>;
+    var account_number = <?php echo $data['account_number']; ?>;
     var action = 'Accepted';
+    var dueDate = $('input[name="dueDate"]').val(); // Get the dueDate from the form
     var buttonContainer = $(this);
-    processLoanAction(loanNo, action, buttonContainer);
+    processLoanAction(loanNo, action, dueDate, account_number, buttonContainer); // Include dueDate in the function call
   });
 
   $('.reject-btn').click(function() {
     var loanNo = <?php echo $data['loanNo']; ?>;
     var action = 'Rejected';
+    var account_number = <?php echo $data['account_number']; ?>;
+    var dueDate = $('input[name="dueDate"]').val(); // Get the dueDate from the form
     var buttonContainer = $(this);
-    processLoanAction(loanNo, action, buttonContainer);
+    processLoanAction(loanNo, action, dueDate, account_number, buttonContainer); // Include dueDate in the function call
   });
 });
 </script>

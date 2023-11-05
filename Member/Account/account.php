@@ -20,11 +20,18 @@ $result = $conn->query($sql);
 $row = $result->fetch_assoc();
 $_SESSION['amountOf_share'] = $row['amountOf_share'];
 
-$sql = "SELECT application_status FROM loan_applications WHERE account_number = " . $_SESSION['account_number'] . " ORDER BY loan_id DESC LIMIT 1";
+$sql = "SELECT application_status, remarks FROM loan_applications WHERE account_number = " . $_SESSION['account_number'] . " ORDER BY loan_id DESC LIMIT 1";
 $result = $conn->query($sql);
-$row = $result->fetch_assoc();
-$_SESSION['application_status'] = $row['application_status'];
-
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    if ($row['application_status'] == 'Accepted' && $row['remarks'] == 'Paid') {
+        $_SESSION['application_status'] = 'No application status';
+    } else {
+        $_SESSION['application_status'] = $row['application_status'];
+    }
+} else {
+    $_SESSION['application_status'] = 'No application status'; // or any default value
+}
 ?>
 
 <!DOCTYPE html>
@@ -197,62 +204,49 @@ $_SESSION['application_status'] = $row['application_status'];
                   </div>
                 </div>
                     <!-- Reports -->
-                <div class="col-md-12 ">
-                  <div class="row">
-                    <div class="col-lg-12 d-flex justify-content-between">
-                        <h3>Trails</h3>
-                        <div class="dropdown">
-                          <button type="button" class="btn btn-link dropdown-toggle p-0" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots-vertical"></i>
-                          </button>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                            <li><button class="dropdown-item" onclick="location.reload();">Refresh</button></li>
-                          </ul>
+                <div class="col-md-12 mt-md-5">
+                    <div class="card">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                          <h3 class="pt-2">Accounting Trails</h3>
+                          <div class="dropdown">
+                            <button type="button" class="btn btn-link dropdown-toggle p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                              <li><button class="dropdown-item" onclick="location.reload();">Refresh</button></li>
+                            </ul>
+                          </div>
                         </div>
-                    </div>
+
+                        <div class="table table-responsive">
+                        <table class="table table-hover">
+                          <thead class="table-primary">
+                            <tr>
+                              <th>Description</th>
+                              <th>Date</th>
+                              <th>Remarks</th>
+                              <th>Balance</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <?php
+                                $sql = "SELECT * FROM loan_payments WHERE account_number IN (SELECT account_number FROM clients WHERE user_id = " . $_SESSION['user_id'] . ") ORDER BY payment_id DESC";
+                                $result = $conn->query($sql);
+                                if ($result->num_rows > 0) {
+                                  while($row = $result->fetch_assoc()) {
+                                    echo "<tr>";
+                                    echo "<td>" . $row['audit_description'] . "</td>";
+                                    echo "<td>" . $row['payment_date'] . "</td>";
+                                    echo "<td>" . $row['remarks'] . "</td>";
+                                    echo "<td>" . $row['amount_paid'] . "</td>";
+                                    echo "</tr>";
+                                  }
+                                }
+                            ?>
+                          </tbody>
+                        </table>
+                      </div>
                   </div>
-                    
-                      
-                  <div class="table table-responsive">
-                      <table class="table table-striped">
-                        <tr>
-                          <th>Description</th>
-                          <th>Date</th>
-                          <th>Remarks</th>
-                          <th>Balance</th>
-                        </tr>
-                        <tr>
-                          <td>Loan Credit</td>
-                          <td>13 Apr 2025</td>
-                          <td>Paid</td>
-                          <td>0.00</td>
-                        </tr>
-                        <tr>
-                          <td>Loan Credit</td>
-                          <td>13 Apr 2025</td>
-                          <td>Paid</td>
-                          <td>0.00</td>
-                        </tr>
-                        <tr>
-                          <td>Loan Credit</td>
-                          <td>13 Apr 2025</td>
-                          <td>Paid</td>
-                          <td>0.00</td>
-                        </tr>
-                        <tr>
-                          <td>Loan Credit</td>
-                          <td>13 Apr 2025</td>
-                          <td>Paid</td>
-                          <td>0.00</td>
-                        </tr>
-                        <tr>
-                          <td>Loan Credit</td>
-                          <td>13 Apr 2025</td>
-                          <td>Paid</td>
-                          <td>0.00</td>
-                        </tr>
-                      </table>
-                    </div>
                 </div>
                 
                   <!-- /Reports -->

@@ -245,6 +245,22 @@ $password = "123"; // Default password is "cooperative member" with special char
 
                   <!-- Toaster -->
                   <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                  <div id="clipboard" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                      <span class="rounded bg-success px-1 me-2"><i class="bi bi-check2 text-success"></i></span>
+                      <strong class="me-auto">Clipboard</strong>
+                      <small id="timestamp"></small>
+                      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                      Copied successfully
+                    </div>
+                  </div>
+                </div>
+                  <!-- /Toaster -->
+
+                  <!-- Toaster -->
+                  <div class="toast-container position-fixed bottom-0 end-0 p-3">
                   <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
                     <div class="toast-header">
                       <span class="rounded bg-success px-1 me-2"><i class="bi bi-check2 text-success"></i></span>

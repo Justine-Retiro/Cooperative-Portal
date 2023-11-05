@@ -1,3 +1,8 @@
+<?php
+session_start(); // Start the session
+
+require_once "globalApi/connection.php";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,21 +20,18 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="/coop/globalStatic/style.css">
-
 </head>
 <body>
     <div class="container-fluid d-flex justify-content-center align-items-center vh-100">
-        <form action="/coop/globalApi/login.php" method="post">
-            <div class="row px-4 vw-md">
-                <div class="col-lg-12 p-md-5 w-100">
-                    <h2 class="me-md-5">Login</h2>
+        <form action="/coop/globalApi/verifybirthdate.php" method="post">
+            <div class="row px-4 vw-md" >
+                <div class="col-lg-12 p-5 w-100">
+                    <h2 class="me-md-5">Verification</h2>
                     <div class="row justify-content-center" >
                         <div class="col-lg-12 my-2">
-                            <label for="account_number">Account Number</label>
-                            <input type="text" class="form-control mb-2" placeholder="Account Number" name="account_number" aria-label="Username" aria-describedby="addon-wrapping">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" placeholder="Password" name="password" id="password">
-                            <button class="btn btn-primary mt-3 w-100">Login</button>
+                            <label for="birthdate">Birthdate</label>
+                            <input type="date" class="form-control" placeholder="birthdate" name="birthdate" id="birthdate">
+                            <button type="submit" class="btn btn-success mt-3 w-100">Verify</button>
                         </div>
                     </div>
                 </div>
@@ -46,17 +48,12 @@ $(document).ready(function() {
     $('form').on('submit', function(event) {
         event.preventDefault();
         $.ajax({
-            url: '/coop/globalApi/login.php',
+            url: '/coop/globalApi/verifybirthdate.php',
             type: 'POST',
             data: $(this).serialize(),
             success: function(response) {
                 var data = JSON.parse(response);
-                if (data.status === 'change_password') {
-                    // Redirect to the password change page
-                    window.location.href = '/coop/changepassword.php';
-                } else if (data.status === 'verify_birthdate') {
-                    window.location.href = '/coop/verifybirthdate.php';
-                } else if (data.status === 'success') {
+                if (data.status === 'success') {
                     if (data.role === 'admin') {
                         window.location.href = '/coop/Admin/Dashboard/dashboard.php';
                     } else if (data.role === 'mem') {
@@ -65,15 +62,10 @@ $(document).ready(function() {
                         window.location.href = '/coop/';
                     }
                 } else {
-                    // Alert for wrong credentials
+                    // Alert for wrong birthdate
                     alert(data.message);
                 }
             },
-            error: function(xhr, status, error) {
-                if (xhr.status === 401) {
-                    alert(xhr.responseText);
-                }
-            }
         });
     });
 });

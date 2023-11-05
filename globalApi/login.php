@@ -28,8 +28,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION["user_id"] = $user['user_id']; // Store the user's id in the session
             $_SESSION["client_id"] = $user['client_id']; // Store the user's client_id in the session
         
-            $response['status'] = 'success';
+            $response['status'] = 'verify_birthdate';
             $response['role'] = $user['role'];
+        
+            // Check if the password is the default one
+            if (password_verify('123', $hashed_password)) {
+                $response['status'] = 'change_password';
+            }
         } else {
             $response['status'] = 'fail';
             $response['message'] = 'Invalid password.';

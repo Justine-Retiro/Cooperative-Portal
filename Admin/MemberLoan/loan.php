@@ -8,7 +8,7 @@
 
   // Fetch the loan applications and the action taken
   $sql = "SELECT c.account_number, la.loanNo, la.customer_name, la.college, la.loan_type, 
-          la.application_date, la.application_status, la.amount, la.action_taken
+          la.application_date, la.application_status, la.amount_before, la.amount_after, la.action_taken
           FROM clients c
           INNER JOIN loan_applications la ON c.account_number = la.account_number";
 
@@ -144,7 +144,7 @@
             <div class="row">
               <div class="col-lg-12">
                 <h1>
-                  Members Repositories
+                  Members Loan Requests
                 </h1>
                 <div class="row" style="margin-top: 2em;">
                   <!-- Table -->
@@ -253,12 +253,7 @@
                                <!-- Search bar -->
                               <div class="col-lg-3" id="search-top-bar">
                                 <div class="input-group" >
-                                  <input class="form-control border-end-0 border rounded-pill" type="text" placeholder="Search" id="search-input">
-                                  <span class="input-group-append">
-                                      <button class="btn btn-outline-secondary bg-white border-start-0 border rounded-pill ms-n3" type="button">
-                                          <i class="fa fa-search"></i>
-                                      </button>
-                                  </span>
+                                  <input class="form-control border rounded" type="text" placeholder="Search" id="search-input">
                                 </div>
                               </div>
                                <!-- /Search bar -->

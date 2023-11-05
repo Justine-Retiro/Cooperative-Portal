@@ -143,7 +143,7 @@ mysqli_close($conn);
             <div class="row">
               <div class="col-lg-12">
                 <h1 id="user-greet">
-                  Hi, John Doe
+                  Hi, Admin!
                 </h1>
                 <h1>
                   Dashboard Overview
