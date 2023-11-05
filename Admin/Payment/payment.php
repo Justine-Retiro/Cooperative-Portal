@@ -151,12 +151,7 @@ if (isset($_GET["account_number"])) {
                           <div class="col-lg-11">
                             <div class="col-lg-3" id="search-top-bar">
                               <div class="input-group" >
-                                <input class="form-control border-end-0 border rounded-pill" type="text" placeholder="Search" id="example-search-input">
-                                <span class="input-group-append">
-                                    <button class="btn btn-outline-secondary bg-white border-start-0 border rounded-pill ms-n3" type="button">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-                                </span>
+                                <input class="form-control border rounded " type="text" placeholder="Search" id="example-search-input">
                               </div>
                               <!-- <a href="/coop/Admin/Repositories/New/member.php"><button class="btn btn-success btn-lg" id="add-mem" style="float: right;">Add</button></a> -->
                           </div>
@@ -167,13 +162,13 @@ if (isset($_GET["account_number"])) {
                         <div class="table table-responsive">
                         <table class="table" style="font-size: large;">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Account Number</th>
-                                    <th>Name</th>
-                                    <th>Balance</th>
-                                    <th>Remarks</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
+                                    <th class='fw-medium'>#</th>
+                                    <th class='fw-medium'>Account Number</th>
+                                    <th class='fw-medium'>Name</th>
+                                    <th class='fw-medium'>Balance</th>
+                                    <th class='fw-medium'>Remarks</th>
+                                    <th class='fw-medium'>Status</th>
+                                    <th class='fw-medium'>Actions</th>
                                 </tr>
                                 <?php
                                   require_once __DIR__ . "/api/connection.php";
@@ -186,13 +181,13 @@ if (isset($_GET["account_number"])) {
                                     while($row = $result->fetch_assoc()) {
                                         echo "<tr>";
                                         echo "<td>" . $counter . "</td>";
-                                        echo "<td>" . $row["account_number"] . "</td>";
+                                        echo "<td> <a class='text-decoration-none text-primary' href='/coop/Admin/Payment/Edit/edit.php?account_number=" . $row["account_number"] . "'>" . $row["account_number"] . "</td>";
                                         echo "<td>" . $row["first_name"] . " " . $row["middle_name"] . " " . $row["last_name"] . "</td>";
                                         echo "<td>" . $row["balance"] . "</td>";
                                         echo "<td>" . $row["remarks"] . "</td>";
                                         echo "<td>" . $row["account_status"] . "</td>";
                                         echo "<td>";
-                                        echo '<a href="/coop/Admin/Payment/Edit/edit.php?account_number=' . $row["account_number"] . '"><button  class="btn btn-success m-1">Edit</button></a>';
+                                        echo '<a href="/coop/Admin/Payment/Edit/edit.php?account_number=' . $row["account_number"] . '"><button  class="btn btn-success me-1">Edit</button></a>';
                                         echo "</td>";
                                         echo "</tr>";
                                         $counter++;

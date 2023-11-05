@@ -2,13 +2,17 @@
 require_once __DIR__ . "/api/connection.php";
 
 if (isset($_GET["account_number"])) {
-  $account_number = $_GET["account_number"];
-  $query = "SELECT * FROM clients WHERE account_number = ?";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("s", $account_number);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $data = $result->fetch_assoc();
+    $account_number = $_GET["account_number"];
+    $query = "SELECT * FROM clients WHERE account_number = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param("s", $account_number);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+} else {
+    // No search query, retrieve all records
+    $sql = "SELECT * FROM clients";
+    $result = $conn->query($sql);
 }
 ?>
 
@@ -151,12 +155,12 @@ if (isset($_GET["account_number"])) {
                           <div class="col-lg-11">
                             <div class="col-lg-3" id="search-top-bar">
                                 <div class="input-group">
-                                  <input class="form-control border-end-0 border rounded-pill" type="text" placeholder="Search" id="example-search-input">
-                                  <span class="input-group-append">
+                                  <input class="form-control border rounded" type="text" placeholder="Search" id="search-input">
+                                  <!-- <span class="input-group-append">
                                       <button class="btn btn-outline-secondary bg-white border-start-0 border rounded-pill ms-n3" type="button">
                                           <i class="fa fa-search"></i>
                                       </button>
-                                  </span>
+                                  </span> -->
                                 </div>
                               <a href="/coop/Admin/Repositories/New/member.php"><button class="btn btn-success" id="add-mem" style="float: right;">Add</button></a>
                           </div>
@@ -164,15 +168,15 @@ if (isset($_GET["account_number"])) {
                         </div>
                         
                       </div>
-                        <div class="table table-responsive">
+                        <div class="table table-responsive" id="client-repositories">
                         <table class="table" style="font-size: large;">
                                 <tr>
-                                  <th>#</th> 
-                                  <th>Account Number</th>
-                                  <th>Name</th>
-                                  <th>Birth Date</th>
-                                  <th>Status</th>
-                                  <th>Actions</th>
+                                  <th class='fw-medium' >#</th> 
+                                  <th class='fw-medium' >Account Number</th>
+                                  <th class='fw-medium' >Name</th>
+                                  <th class='fw-medium' >Birth Date</th>
+                                  <th class='fw-medium' >Status</th>
+                                  <th class='fw-medium' >Actions</th>
                                 </tr>
                                 <?php
                                   require_once __DIR__ . "/api/connection.php";
@@ -191,7 +195,7 @@ if (isset($_GET["account_number"])) {
                                         echo "<td>" . $row["birth_date"] . "</td>";
                                         echo "<td>" . $row["account_status"] . "</td>";
                                         echo "<td>";
-                                        echo '<a href="/coop/Admin/Repositories/Edit/edit.php?account_number=' . $row["account_number"] . '"><button class="btn btn-success m-1">Edit</button></a>';
+                                        echo '<a href="/coop/Admin/Repositories/Edit/edit.php?account_number=' . $row["account_number"] . '"><button class="btn btn-success me-1">Edit</button></a>';
                                         echo '<a href="/coop/Admin/Repositories/api/delete.php?account_number=' . $row["account_number"] . '"><button class="btn btn-danger">Delete</button></a>';                                        echo "</td>";
                                         echo "</tr>";
                                         $counter++;
@@ -218,9 +222,33 @@ if (isset($_GET["account_number"])) {
               <!-- /#page-content-wrapper -->
     </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn2.hubspot.net/hubfs/476360/Chart.js"></script>
 <!-- Sidebar -->
 <script src="script.js"></script>
+
+<!-- Fetching Search -->
+<script>
+
+$('#search-input').on('keyup', function() {
+        var query = $(this).val();
+        searchLoans(query);
+    });
+
+  function searchLoans(query) {
+    $.ajax({
+        url: '/coop/Admin/Repositories/api/searchRepositories.php',
+        type: 'GET',
+        data: { query: query },
+        success: function(data) {
+            $('#client-repositories').html(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('An error occurred:', error);
+        }
+    });
+}
+</script>
+
 </body>
 </html>

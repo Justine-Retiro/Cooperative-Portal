@@ -146,7 +146,7 @@ $_SESSION['balance'] = $row['balance'];
                                 <td>Account Balance</td>
                             </tr>
                             <tr>
-                              <th style="font-size: 25px;">₱ <?php echo number_format($_SESSION["balance"], 2, '.', ',')?></th>
+                              <th style="font-size: 25px;">₱<?php echo number_format($_SESSION["balance"], 2, '.', ',')?></th>
                             </tr>
                         </table>
                       </div>
@@ -175,36 +175,22 @@ $_SESSION['balance'] = $row['balance'];
                             <th>Date</th>
                             <th>Status</th>
                           </tr>
-                          <tr>
-                            <td>Loan Request Application</td>
-                            <td>Loan Request</td>
-                            <td>13 Apr 2025</td>
-                            <td>Pending</td>
-                          </tr>
-                          <tr>
-                            <td>Loan Payment</td>
-                            <td>Loan Payment</td>
-                            <td>01 Jun 2024</td>
-                            <td>Paid</td>
-                          </tr>
-                          <tr>
-                            <td>Loan Request Application</td>
-                            <td>Loan Request</td>
-                            <td>13 Apr 2025</td>
-                            <td>Pending</td>
-                          </tr>
-                          <tr>
-                            <td>Loan Request Application</td>
-                            <td>Loan Request</td>
-                            <td>13 Apr 2025</td>
-                            <td>Pending</td>
-                          </tr>
-                          <tr>
-                            <td>Loan Payment</td>
-                            <td>Loan Payment</td>
-                            <td>01 Jun 2024</td>
-                            <td>Paid</td>
-                          </tr>
+                          <?php
+                            $sql = "SELECT * FROM transaction_history WHERE account_number IN (SELECT account_number FROM clients WHERE user_id = " . $_SESSION['user_id'] . ") ORDER BY history_id DESC";
+                            $result = $conn->query($sql);
+                            if ($result->num_rows > 0) {
+                              while($row = $result->fetch_assoc()) {
+                                echo "<tr>";
+                                echo "<td>" . $row['audit_description'] . "</td>";
+                                echo "<td>" . $row['transaction_type'] . "</td>";
+                                echo "<td>" . $row['transaction_date'] . "</td>";
+                                echo "<td>" . $row['transaction_status'] . "</td>";
+                                echo "</tr>";
+                              }
+                            } else {
+                              echo "<tr><td colspan='4'>No transactions found</td></tr>";
+                            }
+                          ?>
                         </table>
                       </div>
                     </div>

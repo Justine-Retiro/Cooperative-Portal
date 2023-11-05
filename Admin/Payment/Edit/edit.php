@@ -11,6 +11,14 @@ if (isset($_GET["account_number"])) {
   $stmt->execute();
   $result = $stmt->get_result();
   $data = $result->fetch_assoc(); // Fetch the data into an associative array
+
+  // Fetch the latest loan for the account_number
+  $query = "SELECT * FROM loan_applications WHERE account_number = ? AND remarks = 'unpaid' ORDER BY loan_id DESC LIMIT 1";
+  $stmt = $conn->prepare($query);
+  $stmt->bind_param("s", $account_number);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $loanData = $result->fetch_assoc(); // Fetch the loan data into a separate associative array
 }
 ?>
 
@@ -157,57 +165,136 @@ if (isset($_GET["account_number"])) {
                     <button class="btn" onclick="copyToClipboard('#acc-number')"><i class="bi bi-clipboard"></i></button>
                   </p>
                 </div>
-                  <!-- Table -->
-                <form action="/coop/Admin/Payment/api/editData.php" method="post" onsubmit="showAlert()">                  
-                <div class="row m-3">
-                  <input type="hidden" name="account_number" value="<?php echo $account_number; ?>">
-                  <input type="hidden" name="application_status" value="None">
-                  <div class="col-lg-12">
-                  <label for="balance">Balance</label>
-                  <input type="text" class="form-control" name="balance" id="balance">
 
-                  <label for="remarks">Remarks</label>
-                  <select class="form-control" name="remarks" id="remarks">
-                    <option value="Paid">Paid</option>
-                    <option value="Unpaid">Unpaid</option>
-                  </select>
-                  <button class="btn btn-success btn-lg" type="submit" style="float: right; margin-top: 10px;">Save</button>
+                <!-- Table Loan -->
+                <div class="col-lg-12 px-md-4">
+                  <div class="table-responsive">
+                    <h2>Loan trails</h2>
+                      <table class="table table-hover table-bordered">
+                        <thead>
+                            <tr class="table-primary <?php echo ($row['remarks'] == 'Paid') ? 'paid' : ''; ?>">                              <th>#</th>
+                              <th class="fw-semibold">Loan ID</th>
+                              <th class="fw-semibold">Customer name</th>
+                              <th class="fw-semibold">Loan type</th>
+                              <th class="fw-semibold">Date of applying</th>
+                              <th class="fw-semibold">Loan borrowed</th>
+                              <th class="fw-semibold">Loan to pay</th>
+                              <th class="fw-semibold">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                          <!-- You can fetch the user's loan data here and loop through it -->
+                          <?php
+                          
+                          $sql = "SELECT c.account_number, la.loanNo, la.customer_name, la.college, la.loan_type, 
+                            la.application_date, la.application_status, la.amount_before, la.amount_after, la.remarks
+                            FROM clients c
+                            INNER JOIN loan_applications la ON la.account_number = c.account_number
+                            WHERE c.account_number = ?";
+                          $stmt = $conn->prepare($sql);
+                          $stmt->bind_param("s", $account_number);
+                          $stmt->execute();
+                          $result = $stmt->get_result();
+                          $counter = 1;
+                          if ($result->num_rows > 0){
+                            while ($row = $result->fetch_assoc()) {
+                              echo "<tr class='loan-row' data-loan-no='{$row["loanNo"]}'>";
+                              echo "<td>" . $counter . "</td>";
+                              echo "<td>" . $row["loanNo"] . "</td>";
+                              echo "<td>" . $row["customer_name"] . "</td>";
+                              echo "<td>" . $row["loan_type"] . "</td>";
+                              $date = date("F d, Y", strtotime($row["application_date"]));
+                              echo "<td>" . $date . "</td>";
+                              echo "<td>" . $row["amount_before"] . "</td>";
+                              echo "<td>" . $row["amount_after"] . "</td>";
+                              echo "<td>" . $row["remarks"] . "</td>";
+                              echo "</tr>";
+                              $counter++;
+                            }
+                          } else {
+                            echo "<tr><td colspan='9'> No loan history found </td></tr>";
+                          }
+                          ?>
+                        </tbody>
+                      </table>
                   </div>
+                </div>
+                <!-- /Table Loan -->
                 
+                <!-- Table -->
+                <form action="/coop/Admin/Payment/api/editData.php" method="post" onsubmit="showAlert()">                  
+                  <div class="row m-3">
+                  <h2>Accounting</h2>
+                  <p>Loan reference number: 
+                    <?php if (isset($loanData["loanNo"])) {
+                    // You can access $data["loanNo"] here
+                      echo $loanData["loanNo"];
+                    } ?>
+                  </p>
+                    <input type="hidden" name="account_number" value="<?php echo $account_number; ?>">
+                    <input type="hidden" name="loanNo" value="<?php if (isset($loanData["loanNo"])) {echo $loanData["loanNo"];} ?>">
+                    <input type="hidden" name="application_status" value="None">
+                    <div class="col-lg-12">
+                      <div class="row d-flex">
+                        <div class="col-lg-6">
+                          <label for="currentBalance">Current Balance</label>
+                          <input type="text" class="form-control" id="currentBalance" value="<?php echo $data["balance"]; ?>" disabled readonly>
+                        </div>
+
+                        <div class="col-lg-6">
+                          <label for="balance">Amount</label>
+                          <input type="text" class="form-control" name="balance" id="balance">
+                        </div>
+
+                        <div class="col-lg-6">
+                          <label for="totalBalance">Total Balance</label>
+                          <input type="text" class="form-control" name="totalBalance" id="totalBalance" readonly>
+                        </div>
+                      </div>
+                      
+
+                    <label for="remarks">Remarks</label>
+                    <select class="form-control" name="remarks" id="remarks">
+                      <option value="Paid">Paid</option>
+                      <option value="Unpaid">Unpaid</option>
+                    </select>
+                    <button class="btn btn-success btn-lg" type="submit" style="float: right; margin-top: 10px;">Save</button>
+                    </div>
                 </form>
+
                   <!-- /Table -->
                   <!-- Fetching data -->
                   <div class="col-lg-12">
-                  <div class="row" >
-                  <div class="col-lg-4">
-                    <p><strong>Last Name:</strong> <span id="lastNameText"><?php echo $data['last_name']; ?></span></p>
-                    <p><strong>Citizenship:</strong> <span id="citizenshipText"><?php echo $data['citizenship']; ?></span></p>
-                    <p><strong>Civil Status:</strong> <span id="civil_status"><?php echo $data['civil_status']; ?></span></p>
-                    <p><strong>City Address:</strong> <span id="cityAddressText"><?php echo $data['city_address']; ?></span></p>
-                    <p><strong>Phone Number:</strong> <span id="contactAddressText"><?php echo $data['phone_num']; ?></span></p>
-                    <p><strong>Work Position:</strong> <span id="workPositionText"><?php echo $data['position']; ?></span></p>
-                    <p><strong>Balance:</strong> <span id="balance"><?php echo $data['balance']; ?></span></p>
+                    <div class="row" >
+                      <div class="col-lg-4">
+                        <p><strong>Last Name:</strong> <span id="lastNameText"><?php echo $data['last_name']; ?></span></p>
+                        <p><strong>Citizenship:</strong> <span id="citizenshipText"><?php echo $data['citizenship']; ?></span></p>
+                        <p><strong>Civil Status:</strong> <span id="civil_status"><?php echo $data['civil_status']; ?></span></p>
+                        <p><strong>City Address:</strong> <span id="cityAddressText"><?php echo $data['city_address']; ?></span></p>
+                        <p><strong>Phone Number:</strong> <span id="contactAddressText"><?php echo $data['phone_num']; ?></span></p>
+                        <p><strong>Work Position:</strong> <span id="workPositionText"><?php echo $data['position']; ?></span></p>
+                        <p><strong>Balance:</strong> <span id="balance"><?php echo $data['balance']; ?></span></p>
 
-                  </div>
-                  <div class="col-lg-4">
-                    <p><strong>Middle Name:</strong> <span id="middleNameText"><?php echo $data['middle_name']; ?></span></p>
-                    <p><strong>Provincial Address:</strong> <span id="provincialAddressText"><?php echo $data['provincial_address']; ?></span></p>
-                    <p><strong>Mailing Address:</strong> <span id="mailingAddressText"><?php echo $data['mailing_address']; ?></span></p>
-                    <p><strong>Place of Birth:</strong> <span id="placeOfBirthText"><?php echo $data['birth_place']; ?></span></p>
-                    <p><strong>Nature of work:</strong> <span id="natureOfWork"><?php echo $data['natureOf_work']; ?></span></p>
-                    <p><strong>Account Status:</strong> <span id="natureOfWork"><?php echo $data['account_status']; ?></span></p>
-                    <p><strong>Remarks:</strong> <span id="remarks"><?php echo $data['remarks']; ?></span></p>
+                      </div>
+                      <div class="col-lg-4">
+                        <p><strong>Middle Name:</strong> <span id="middleNameText"><?php echo $data['middle_name']; ?></span></p>
+                        <p><strong>Provincial Address:</strong> <span id="provincialAddressText"><?php echo $data['provincial_address']; ?></span></p>
+                        <p><strong>Mailing Address:</strong> <span id="mailingAddressText"><?php echo $data['mailing_address']; ?></span></p>
+                        <p><strong>Place of Birth:</strong> <span id="placeOfBirthText"><?php echo $data['birth_place']; ?></span></p>
+                        <p><strong>Nature of work:</strong> <span id="natureOfWork"><?php echo $data['natureOf_work']; ?></span></p>
+                        <p><strong>Account Status:</strong> <span id="natureOfWork"><?php echo $data['account_status']; ?></span></p>
+                        <p><strong>Remarks:</strong> <span id="remarks"><?php echo $data['remarks']; ?></span></p>
 
-                  </div>
-                  <div class="col-lg-4">
-                    <p><strong>First Name:</strong> <span id="firstNameText"><?php echo $data['first_name']; ?></span></p>
-                    <p><strong>Name of Spouse:</strong> <span id="spouseNameText"><?php echo $data['spouse_name']; ?></span></p>
-                    <p><strong>Tax Identification Number:</strong> <span id="taxIdentificationNumberText"><?php echo $data['taxID_num']; ?></span></p>
-                    <p><strong>Date of Birth:</strong> <span id="dateOfBirthText"><?php echo $data['birth_date']; ?></span></p>
-                    <p><strong>Date of Employment:</strong> <span id="date_employed"><?php echo $data['date_employed']; ?></span></p>
-                    <p><strong>Amount of shares:</strong> <span id="amountOfshares"><?php echo $data['amountOf_share']; ?></span></p>
-                  </div>
-                </div>
+                      </div>
+                      <div class="col-lg-4">
+                        <p><strong>First Name:</strong> <span id="firstNameText"><?php echo $data['first_name']; ?></span></p>
+                        <p><strong>Name of Spouse:</strong> <span id="spouseNameText"><?php echo $data['spouse_name']; ?></span></p>
+                        <p><strong>Tax Identification Number:</strong> <span id="taxIdentificationNumberText"><?php echo $data['taxID_num']; ?></span></p>
+                        <p><strong>Date of Birth:</strong> <span id="dateOfBirthText"><?php echo $data['birth_date']; ?></span></p>
+                        <p><strong>Date of Employment:</strong> <span id="date_employed"><?php echo $data['date_employed']; ?></span></p>
+                        <p><strong>Amount of shares:</strong> <span id="amountOfshares"><?php echo $data['amountOf_share']; ?></span></p>
+                      </div>
+                    </div>
                   </div>
                   
                   <!-- /Fetching Data -->
@@ -229,18 +316,30 @@ if (isset($_GET["account_number"])) {
 <script src="/coop/Admin/Repositories/static/clipboard.js"></script>
 <!-- Script -->
 <script>
+document.getElementById("balance").addEventListener("input", function () {
+  var amount = parseFloat(this.value);
+  var currentBalance = parseFloat(document.getElementById("currentBalance").value);
 
-  // Add an event listener to the balance input field
-  document.getElementById("balance").addEventListener("input", function () {
-    var balance = parseFloat(this.value);
+  // Check if the amount is a valid number
+  if (isNaN(amount)) {
+    // If the amount is not a number, set the total balance to be the same as the current balance
+    document.getElementById("totalBalance").value = currentBalance.toFixed(2);
+    document.getElementById("remarks").value = "Unpaid";
+  } else {
+    // If the amount is a valid number, perform the calculation
+    var newBalance = currentBalance - amount;
+
+    // Update the "Total Balance" input field
+    document.getElementById("totalBalance").value = newBalance.toFixed(2);
 
     // Check the balance value and update the "Remarks" select accordingly
-    if (balance === 0) {
+    if (newBalance === 0) {
       document.getElementById("remarks").value = "Paid";
-    } else if (balance > 1) {
+    } else if (newBalance > 0) {
       document.getElementById("remarks").value = "Unpaid";
     }
-  });
+  }
+});
 
   window.onload = function() {
     <?php foreach ($data as $key => $value) : ?>
@@ -251,14 +350,18 @@ if (isset($_GET["account_number"])) {
     <?php endforeach; ?>
 }
 
-window.onload = function() {
-    <?php foreach ($data as $key => $value) : ?>
-        var element = document.getElementById("<?php echo $key; ?>Text");
-        if (element) {
-            element.textContent = "<?php echo $value; ?>";
-        }
-    <?php endforeach; ?>
-}
+
+// Table
+var tableRows = document.querySelectorAll(".loan-row");
+tableRows.forEach(function(row) {
+  row.addEventListener("click", function() {
+    // Get the loanNo from the clicked row
+    var loanNo = this.getAttribute("data-loan-no");
+
+    // Redirect to the same page with the loanNo as a query parameter
+    window.location.href = window.location.pathname + "?account_number=" + "<?php echo $account_number; ?>" + "&loanNo=" + loanNo;
+  });
+});
 
 function showAlert() {
   alert("Data successfully updated!");

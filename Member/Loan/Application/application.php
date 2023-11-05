@@ -126,7 +126,7 @@ $loanRefNo = str_pad(rand(0, 99999), 4, "1", STR_PAD_LEFT);
                     <div class="col-lg-12">
                       <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                          <li class="breadcrumb-item"><a href="/Loan/loan.html" class="text-decoration-none">Loan</a></li>
+                          <li class="breadcrumb-item"><a href="/coop/Member/Loan/loan.php" class="text-decoration-none">Loan</a></li>
                           <li class="breadcrumb-item active" aria-current="page">Application</li>
                         </ol>
                       </nav>
@@ -141,71 +141,127 @@ $loanRefNo = str_pad(rand(0, 99999), 4, "1", STR_PAD_LEFT);
                       <div class="col-lg-4">
                             <input type="hidden" name="loanNo" value="<?php echo $loanRefNo; ?>">
                             <input type="hidden" name="application_status" value="Pending">
-                            <label for="name">Name</label>  
-                            <?php
-                            require_once __DIR__ . '/../../api/connection.php';
+                            <div class="mb-3">
+                              <label for="name">Name</label>  
+                              <?php
+                              require_once __DIR__ . '/../../api/connection.php';
 
-                            $sql = "SELECT * FROM clients WHERE account_number = '{$_SESSION['account_number']}'";
-                            $result = mysqli_query($conn, $sql);
-                            $row = mysqli_fetch_assoc($result);
-                            $customerName = $row["first_name"] . " " . $row["last_name"];
-                            ?>
+                              $sql = "SELECT * FROM clients WHERE account_number = '{$_SESSION['account_number']}'";
+                              $result = mysqli_query($conn, $sql);
+                              $row = mysqli_fetch_assoc($result);
+                              $customerName = $row["first_name"] . " " . $row["last_name"];
+                              ?>
 
-                            <input type="text" class="form-control" name="customer_name" id="name" value="<?php echo $customerName; ?>">
-
-                            <label for="college">College/Dept</label>  
-                            <input type="text" class="form-control" name="college" id="college" placeholder="College/Dept">
-                              
-                            <label for="contact">Contact No.</label>  
-                            <input type="number" class="form-control" name="contact" id="contact" placeholder="Contact No.">
-                              
-                            <label for="dob">Date of Birth</label>
-                            <input type="date" class="form-control" name="dob" id="dob" placeholder="Date of Birth">
-                        </div>
-                        <div class="col-lg-4">
+                              <input type="text" class="form-control" name="customer_name" id="name" value="<?php echo $customerName; ?>">
+                            </div>
+                            
+                            <div class="mb-3">
+                              <label for="college">College/Dept</label>  
+                              <input type="text" class="form-control" name="college" id="college" placeholder="College/Dept">
+                            </div>
+                            
+                            <div class="mb-3">
+                              <label for="contact">Contact No.</label>  
+                              <input type="number" class="form-control" name="contact" id="contact" placeholder="Contact No.">
+                            </div>
+                            
+                            <div class="mb-3">
+                              <label for="dob">Date of Birth</label>
+                              <input type="date" class="form-control" name="dob" id="dob" placeholder="Date of Birth">
+                            </div>
+                      </div>
+                      <div class="col-lg-4">
+                        
+                          <div class="mb-3">
                             <label for="age">Age</label>
                             <input type="number" class="form-control" name="age" id="age" placeholder="Age">
-                          
+                          </div>
+                        
+                          <div class="mb-3">
                             <label for="doe">Date of Employed</label>  
                             <input type="date" class="form-control" name="doe" id="doe" placeholder="Date of Employed">
-                              
+                          </div>
+                            
+                          <div class="mb-3">
                             <label for="retirement">Year of Retirement</label>  
                             <input type="number" class="form-control" name="retirement" id="retirement" placeholder="Year of Retirement">
-                          
+                          </div>
+                        
+                          <div class="mb-3">
                             <label for="work_position">Work Position</label>  
                             <input type="text" class="form-control" name="work_position" id="work_position" placeholder="Work Position">
-                              
-                        </div>
-                        <div class="col-lg-4">
+                          </div>
 
+                          <div class="mb-3">
+                            <label for="amount_before">Loan Amount</label>  
+                            <input type="number" class="form-control" name="amount_before" id="amount_before" placeholder="Loan Amount" oninput="calculateInterest()">
+                          </div>
+                            
+                      </div>
+                      <div class="col-lg-4">
+
+                          <div class="mb-3">
                             <label for="loan_type">Loan Type</label>
                             <select class="form-control" id="loan_type" name="loan_type">
                                 <option value="Regular" selected>Regular</option>
                                 <option value="Providential">Providential</option>
                                 <option value="Others">Others</option>
                             </select>
+                          </div>
 
+                          <div class="mb-3">
                             <label for="doa">Date of Application</label>  
                             <input type="date" class="form-control" name="doa" id="doa" placeholder="Date of Application">
+                          </div>
                           
-                            <label for="amount">Loan Amount</label>  
-                            <input type="number" class="form-control" name="amount" id="amount" placeholder="Loan Amount">
+                          <div class="mb-3">
+                            <label for="loan_term_Type">Loan term Type</label>  
+                            <select class="form-control" id="loan_term_Type" name="loan_term_Type">
+                                <option value="">Select term type</option>
+                                <option value="month/s">Months</option>
+                                <option value="year/s">Years</option>
+                            </select>
                         </div>
-                        <div class="col-lg-12">
+                                                    
+                        <div class="mb-3">
+                            <label for="time_pay">Loan Term</label>  
+                            <input type="number" class="form-control" name="time_pay" id="time_pay" placeholder="Loan Term" oninput="calculateInterest()" disabled>
+                        </div>
+
+
+                          <div class="mb-3">
+                            <label for="amount_after">Amount to pay</label>  
+                            <input type="text" class="form-control" name="amount_after" id="amount_after" oninput="calculateInterest()" readonly>
+                          </div>
+                      </div>
+                      <div class="col-lg-12">
+                        <br>
+                        <h4 >Terms and agreement</h4>
+                        <p>I hereby authorize the NEUST Community Credit Cooperative/NEUST Cashier to deduct
+                          the monthly amortization of my loan from my pay slip. 
+                          I AGREE THAT ANY LATE PAYMENT
+                          WILL BE SUBJECTED TO A PENALTY OF 3% PER MONTH OF DELAY. Furthermore, default in
+                          payments for three (3) months will be ground for the coop to take this matter into court and the
+                          balance should be due and demandable.</p>
+                          
+                            <label for="signature">Upload picture of signature</label>  
+                            <input type="file" class="form-control" name="signature" id="signature">
                           <br>
-                          <h4 >Terms and agreement</h4>
-                          <p>I hereby authorize the NEUST Community Credit Cooperative/NEUST Cashier to deduct
-                            the monthly amortization of my loan from my pay slip. 
-                            I AGREE THAT ANY LATE PAYMENT
-                            WILL BE SUBJECTED TO A PENALTY OF 3% PER MONTH OF DELAY. Furthermore, default in
-                            payments for three (3) months will be ground for the coop to take this matter into court and the
-                            balance should be due and demandable.</p>
-                            
-                              <label for="signature">Upload picture of signature</label>  
-                              <input type="file" class="form-control" name="signature" id="signature">
-                            <br>
-                            <button class="btn btn-primary" type="submit" style="float: right;">Apply</button>
-                        </div>
+                          <button class="btn btn-primary" type="submit" style="float: right;">Apply</button>
+                      </div>
+
+                      <div class="col-lg-12 mt-5">
+                              <div class="card">
+                              <div class="card-header">
+                                        <h4 class="mt-2">Summary</h4>
+                                      </div>
+                                <div class="card-body">
+                                  <div class="" id="summary">
+                                      
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                     </div>
                       
                     </form>
@@ -224,27 +280,76 @@ $loanRefNo = str_pad(rand(0, 99999), 4, "1", STR_PAD_LEFT);
 <!-- Validation Script-->
 <script>
   function validateForm() {
-    // Get the values of the required fields
-    var name = document.getElementById("name").value;
-    var college = document.getElementById("college").value;
-    var number = document.getElementById("contact").value;
-    var amount = document.getElementById("amount").value;
-    var dateofApplication = document.getElementById("doa").value;
-    // var signature = document.getElementById("signature").value;
+  // Get the values of the required fields
+  var name = document.getElementById("name").value;
+  var college = document.getElementById("college").value;
+  var number = document.getElementById("contact").value;
+  var amount = document.getElementById("amount").value;
+  var dateofApplication = document.getElementById("doa").value;
+  // var signature = document.getElementById("signature").value;
 
-    // Check if the required fields are empty
-    if (
-      name === "" ||
-      college === "" ||
-      number === "" ||
-      amount === "" ||
-      dateofApplication === ""
-      // signature === ""
-    ) {
-      alert("Please fill out all required fields.");
-      return false; // Prevent form submission
-    }
+  // Check if the required fields are empty
+  if (
+    name === "" ||
+    college === "" ||
+    number === "" ||
+    amount === "" ||
+    dateofApplication === ""
+    // signature === ""
+  ) {
+    alert("Please fill out all required fields.");
+    return false; // Prevent form submission
   }
+}
+
+document.getElementById('loan_term_Type').onchange = function() {
+  var loanTermField = document.getElementById('time_pay');
+  loanTermField.disabled = this.value === "" ? true : false;
+  if (!loanTermField.disabled) {
+    loanTermField.oninput = calculateInterest;
+  }
+  calculateInterest();
+}
+
+
+
+function calculateInterest() {
+  const principal = parseFloat($('#amount_before').val());
+  const rate = 5;
+  const timeType = $('#loan_term_Type').val();
+  let tTime = parseFloat($('#time_pay').val());
+
+  // Convert time to years if it's in months
+  if (timeType === "month/s") {
+      time = tTime / 12;
+  } else {
+    time = tTime;
+  }
+
+  if (!isNaN(principal) && !isNaN(rate) && !isNaN(time)) {
+      const interest = (principal * rate * time) / 100;
+      const totalAmount = principal + interest;
+              
+      $('#amount_after').val(totalAmount.toFixed(2));
+      $('#interestRate').val(rate);
+
+      $('#amount_after').on('input', function() {
+          $(this).val(parseFloat($(this).val()).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
+      });
+      // Output the summary
+      const summaryElement = $('#summary');
+      summaryElement.html(`
+        <h5>Loan amount: ${principal.toLocaleString('en-US', {style: 'currency', currency: 'PHP'})}</h5>
+        <span>Interest rate: ${rate}%</span> 
+        <br>
+        <span>Time to pay: ${tTime} ${timeType}</span>
+        <h4>Total amount: ${totalAmount.toLocaleString('en-US', {style: 'currency', currency: 'PHP'})}</h4>
+      `);
+  } else {
+      $('#amount_after').val('');
+      $('#summary').html('');
+  }
+}
 </script>
 </body>
 </html>

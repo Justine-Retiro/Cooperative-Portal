@@ -23,13 +23,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $retirement_year = $_POST['retirement'];
     $application_date = $_POST['doa'];
     $applicant_sign = $_POST['signature'];
-    $amount = $_POST['amount'];
+    $amount_before = $_POST['amount_before'];
+    $amount_after = $_POST['amount_after'];
+    $time_pay = $_POST['time_pay'];
+    $loanTerm_type = $_POST['loan_term_Type'];
 
     // Check if $stmtInsert is set, and if not, prepare the statement
     $insertSql = "INSERT INTO loan_applications (
-        loanNo, account_number, customer_name, age, birth_date, date_employed, contact_num, college, loan_type, work_position,
-        retirement_year, application_date, applicant_sign, application_status, amount)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";    
+        loanNo, account_number, customer_name, age, birth_date, date_employed, contact_num, college, 
+        loan_type, work_position,
+        retirement_year, application_date, applicant_sign, 
+        application_status, amount_before, amount_after, time_pay, loan_term_Type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";    
     $stmtInsert = $conn->prepare($insertSql);
     
     if (!$stmtInsert) {
@@ -37,8 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Bind parameters for the insert query
-    $bindInsert = $stmtInsert->bind_param('iissssssssssssi', $loanNo, $account_number, $customer_name, $age, $birth_date, $date_employed, $contact_num, 
-    $college, $loan_type, $work_position, $retirement_year, $application_date, $applicant_sign, $application_status, $amount);
+    $bindInsert = $stmtInsert->bind_param('iissssssssssssiiis', $loanNo, $account_number, $customer_name, $age, $birth_date, $date_employed, $contact_num, 
+    $college, $loan_type, $work_position, $retirement_year, $application_date, $applicant_sign, $application_status, $amount_before, $amount_after, $time_pay, $loanTerm_type);
 
     if (!$bindInsert) {
         echo "Binding parameters failed: (" . $stmtInsert->errno . ") " . $stmtInsert->error;
@@ -47,6 +52,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if the statement is executed successfully
     if ($stmtInsert->execute()) {
         // Loan application submitted successfully
+
+        // Insert record into transaction_history table
+        $audit_description = "Loan Request";
+        $transaction_type = "Loan";
+        $transaction_date = date("Y-m-d");
+        $transaction_status = $application_status;
+
+        $query = "INSERT INTO transaction_history (account_number, audit_description, transaction_type, transaction_date, transaction_status) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("sssss", $account_number, $audit_description, $transaction_type, $transaction_date, $transaction_status);
+        $stmt->execute();
+
         header("location: /coop/Member/Loan/loan.php");
         exit();
     } else {
