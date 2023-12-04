@@ -1,3 +1,10 @@
+<?php 
+if (isset($_SESSION['toastr'])) {
+    echo '<script>sessionStorage.setItem("toastr", "'.$_SESSION['toastr'].'");</script>';
+    unset($_SESSION['toastr']);
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +19,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+
+
 
     <!-- Styles -->
     <link rel="stylesheet" href="/coop/globalStatic/style.css">
@@ -39,10 +50,21 @@
 
 <!-- CDN's -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 <!-- Alert validation -->
 <script>
 $(document).ready(function() {
+    // Check if there's a toastr message in the cookie
+    var toastrMessage = getCookie('toastr');
+    if (toastrMessage) {
+        // If there is, show the toastr and delete the cookie
+        toastr.error(decodeURIComponent(toastrMessage));
+        var now = new Date();
+        now.setTime(now.getTime() - 1);
+        document.cookie = 'toastr=; expires=' + now.toUTCString() + '; path=/;';
+    }
+    
     $('form').on('submit', function(event) {
         event.preventDefault();
         $.ajax({
@@ -54,29 +76,46 @@ $(document).ready(function() {
                 if (data.status === 'change_password') {
                     // Redirect to the password change page
                     window.location.href = '/coop/changepassword.php';
+
                 } else if (data.status === 'verify_birthdate') {
                     window.location.href = '/coop/verifybirthdate.php';
+
+                } else if (data.status === 'redirect') {
+                    toastr.error('Too many failed attempts. Please log in again.');
+                    window.location.href = '/coop/';
+
                 } else if (data.status === 'success') {
                     if (data.role === 'admin') {
-                        window.location.href = '/coop/Admin/Dashboard/dashboard.php';
+                        window.location.href = '/coop/admin/dashboard/dashboard.php';
                     } else if (data.role === 'mem') {
-                        window.location.href = '/coop/Member/Dashboard/dashboard.php';
+                        window.location.href = '/coop/member/dashboard/dashboard.php';
                     } else {
                         window.location.href = '/coop/';
                     }
                 } else {
-                    // Alert for wrong credentials
-                    alert(data.message);
+                    // Toastr alert for wrong credentials
+                    toastr.error(data.message);
                 }
             },
             error: function(xhr, status, error) {
                 if (xhr.status === 401) {
-                    alert(xhr.responseText);
+                    toastr.error(xhr.responseText);
                 }
             }
         });
     });
 });
+// Function to get a cookie by name
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
 </script>
 </body>
 </html>

@@ -2,15 +2,6 @@
 *{
    font-family: 'Poppins', sans-serif;
 }
-#chart-container{
-    width: max-content;
-}
-#canvas {
-    height: 500px; /* Or whatever height you want */
-}
-#card-title{
-    margin-bottom: 5px;
-}
 
 .col-md-3{
     padding-top: 10px;

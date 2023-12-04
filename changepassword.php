@@ -1,3 +1,13 @@
+<?php
+session_start(); // Start the session
+
+// Check if the user is logged in
+if (!isset($_SESSION["account_number"])) {
+    header("Location: /coop/index.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +22,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+
 </head>
 <body>
     <div class="container-fluid d-flex justify-content-center align-items-center vh-100">
@@ -33,6 +46,7 @@
 
 <!-- CDN's -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
 <!-- Alert validation -->
@@ -47,8 +61,10 @@
                 success: function(response) {
                     var data = JSON.parse(response);
                     if (data.status === 'success') {
-                        alert('Password changed successfully');
-                        window.location.href = '/coop/Member/Dashboard/dashboard.php';
+                        document.cookie = 'toastr=Successfully changed password; path=/;';
+                        setTimeout(function() {
+                            window.location.href = '/coop/verifybirthdate.php';
+                        }, 2000);
                     } else {
                         // Alert for failed password change
                         alert(data.message);

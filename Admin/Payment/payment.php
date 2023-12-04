@@ -1,15 +1,7 @@
 <?php
 require_once __DIR__ . "/api/connection.php";
+include 'api/paymentHeader.php';
 
-if (isset($_GET["account_number"])) {
-  $account_number = $_GET["account_number"];
-  $query = "SELECT * FROM clients WHERE account_number = ?";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("s", $account_number);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $data = $result->fetch_assoc();
-}
 ?>
 
 <!DOCTYPE html>
@@ -17,7 +9,7 @@ if (isset($_GET["account_number"])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Payment Repositories</title>
     <!-- CDN's -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/172203/font-awesome.min.css">
@@ -151,7 +143,7 @@ if (isset($_GET["account_number"])) {
                           <div class="col-lg-11">
                             <div class="col-lg-3" id="search-top-bar">
                               <div class="input-group" >
-                                <input class="form-control border rounded " type="text" placeholder="Search" id="example-search-input">
+                                <input class="form-control border rounded " type="text" placeholder="Search" id="search-input">
                               </div>
                               <!-- <a href="/coop/Admin/Repositories/New/member.php"><button class="btn btn-success btn-lg" id="add-mem" style="float: right;">Add</button></a> -->
                           </div>
@@ -159,8 +151,8 @@ if (isset($_GET["account_number"])) {
                         </div>
                         
                       </div>
-                        <div class="table table-responsive">
-                        <table class="table" style="font-size: large;">
+                        <div class="table table-responsive" id="client-repositories">
+                          <table class="table" style="font-size: large;" >
                                 <tr>
                                     <th class='fw-medium'>#</th>
                                     <th class='fw-medium'>Account Number</th>
@@ -171,33 +163,9 @@ if (isset($_GET["account_number"])) {
                                     <th class='fw-medium'>Actions</th>
                                 </tr>
                                 <?php
-                                  require_once __DIR__ . "/api/connection.php";
-
-                                  $sql = "SELECT * FROM clients";
-                                  $result = $conn->query($sql);
-                                  
-                                  $counter = 1;
-                                  if ($result->num_rows > 0) {
-                                    while($row = $result->fetch_assoc()) {
-                                        echo "<tr>";
-                                        echo "<td>" . $counter . "</td>";
-                                        echo "<td> <a class='text-decoration-none text-primary' href='/coop/Admin/Payment/Edit/edit.php?account_number=" . $row["account_number"] . "'>" . $row["account_number"] . "</td>";
-                                        echo "<td>" . $row["first_name"] . " " . $row["middle_name"] . " " . $row["last_name"] . "</td>";
-                                        echo "<td>" . $row["balance"] . "</td>";
-                                        echo "<td>" . $row["remarks"] . "</td>";
-                                        echo "<td>" . $row["account_status"] . "</td>";
-                                        echo "<td>";
-                                        echo '<a href="/coop/Admin/Payment/Edit/edit.php?account_number=' . $row["account_number"] . '"><button  class="btn btn-success me-1">Edit</button></a>';
-                                        echo "</td>";
-                                        echo "</tr>";
-                                        $counter++;
-                                    }
-                                } else {
-                                    echo "<tr><td colspan='5'>No records found.</td></tr>";
-                                }
-                                
-                                  ?>
-                            </table>  
+                                include 'api/fetchPayment.php';
+                                ?>
+                          </table>  
                         </div>
                     </div>
                 </div>
@@ -216,5 +184,26 @@ if (isset($_GET["account_number"])) {
 <script src="script.js"></script>
 <!-- Generate Account-->
 <script src="/coop/Admin/Repositories/static/generate.js"></script>
+<script>
+  // Searching Data
+$('#search-input').on('keyup', function() {
+        var query = $(this).val();
+        searchLoans(query);
+    });
+
+  function searchLoans(query) {
+    $.ajax({
+        url: '/coop/Admin/Payment/api/searchPayments.php',
+        type: 'GET',
+        data: { query: query },
+        success: function(data) {
+            $('#client-repositories').html(data);
+        },
+        error: function(xhr, status, error) {
+            console.error('An error occurred:', error);
+        }
+    });
+}
+</script>
 </body>
 </html>

@@ -2,12 +2,7 @@
 *{
    font-family: 'Poppins', sans-serif;
 }
-#chart-container{
-    width: max-content;
-}
-#canvas {
-    height: 500px; /* Or whatever height you want */
-}
+
 #card-title{
     margin-bottom: 5px;
 }
@@ -21,10 +16,18 @@
     width: auto;
     border-radius: 8px;
     background: var(#FFF);
-
     /* light-shadow */
     box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.10);
+
+    transform: scale(1.0);
+    transition: all 200ms ease-out;
 }
+
+#card-container:hover{
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
 .table{
     color: #6E7074;
     font-family: "Poppins";

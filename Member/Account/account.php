@@ -1,37 +1,7 @@
 <?php
 include __DIR__ . "/../api/session.php";
 require_once __DIR__ . '/../api/connection.php';
-
-$sql = "SELECT * FROM clients WHERE user_id = " . $_SESSION['user_id'];
-$result = $conn->query($sql);
-
-$sql = "SELECT balance FROM clients WHERE user_id = " . $_SESSION['user_id'];
-$result = $conn->query($sql);
-$row = $result->fetch_assoc();
-$_SESSION['balance'] = $row['balance'];
-
-$sql = "SELECT remarks FROM clients WHERE user_id = " . $_SESSION['user_id'];
-$result = $conn->query($sql);
-$row = $result->fetch_assoc();
-$_SESSION['remarks'] = $row['remarks'];
-
-$sql = "SELECT amountOf_share FROM clients WHERE user_id = " . $_SESSION['user_id'];
-$result = $conn->query($sql);
-$row = $result->fetch_assoc();
-$_SESSION['amountOf_share'] = $row['amountOf_share'];
-
-$sql = "SELECT application_status, remarks FROM loan_applications WHERE account_number = " . $_SESSION['account_number'] . " ORDER BY loan_id DESC LIMIT 1";
-$result = $conn->query($sql);
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    if ($row['application_status'] == 'Accepted' && $row['remarks'] == 'Paid') {
-        $_SESSION['application_status'] = 'No application status';
-    } else {
-        $_SESSION['application_status'] = $row['application_status'];
-    }
-} else {
-    $_SESSION['application_status'] = 'No application status'; // or any default value
-}
+include 'api/fetchHeader.php';
 ?>
 
 <!DOCTYPE html>
@@ -39,7 +9,7 @@ if ($result->num_rows > 0) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Account Overview</title>
     <!-- CDN's -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/172203/font-awesome.min.css">
@@ -230,26 +200,52 @@ if ($result->num_rows > 0) {
                           </thead>
                           <tbody>
                             <?php
-                                $sql = "SELECT * FROM loan_payments WHERE account_number IN (SELECT account_number FROM clients WHERE user_id = " . $_SESSION['user_id'] . ") ORDER BY payment_id DESC";
-                                $result = $conn->query($sql);
-                                if ($result->num_rows > 0) {
-                                  while($row = $result->fetch_assoc()) {
-                                    echo "<tr>";
-                                    echo "<td>" . $row['audit_description'] . "</td>";
-                                    echo "<td>" . $row['payment_date'] . "</td>";
-                                    echo "<td>" . $row['remarks'] . "</td>";
-                                    echo "<td>" . $row['amount_paid'] . "</td>";
-                                    echo "</tr>";
-                                  }
-                                }
+                                include 'api/fetchTable.php';
                             ?>
                           </tbody>
                         </table>
                       </div>
                   </div>
                 </div>
-                
                   <!-- /Reports -->
+                  <!-- Loan Trails -->
+                  <div class="col-md-12 mt-md-5">
+                    <div class="card">
+                      <div class="card-header d-flex justify-content-between align-items-center">
+                          <h3 class="pt-2">Loan Trails</h3>
+                          <div class="dropdown">
+                            <button type="button" class="btn btn-link dropdown-toggle p-0" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                              <li><button class="dropdown-item" onclick="location.reload();">Refresh</button></li>
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div class="table table-responsive">
+                        <table class="table table-hover">
+                          <thead class="table-primary">
+                            <tr>
+                              <th>Loan No.</th>
+                              <th>Loan Type</th>
+                              <th>Date</th>
+                              <th>Loan Amount</th>
+                              <th>Amount pay</th>
+                              <th>Due Date</th>
+                              <th>Loan status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <?php
+                                include 'api/fetchLoanTable.php';
+                            ?>
+                          </tbody>
+                        </table>
+                      </div>
+                  </div>
+                </div>
+                  <!-- /Loan Trails -->
               </div>
             </div>
           </div>

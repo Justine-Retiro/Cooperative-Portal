@@ -1,25 +1,5 @@
 <?php
-if (isset($_GET["account_number"])) {
-  $account_number = $_GET["account_number"];
-  
-  // Retrieve the account details from the database and display them
-  require_once $_SERVER['DOCUMENT_ROOT'] . "/coop/Admin/Repositories/api/connection.php";
-
-  $query = "SELECT * FROM clients WHERE account_number = ?";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("s", $account_number);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $data = $result->fetch_assoc(); // Fetch the data into an associative array
-
-  // Fetch the latest loan for the account_number
-  $query = "SELECT * FROM loan_applications WHERE account_number = ? AND remarks = 'unpaid' ORDER BY loan_id DESC LIMIT 1";
-  $stmt = $conn->prepare($query);
-  $stmt->bind_param("s", $account_number);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  $loanData = $result->fetch_assoc(); // Fetch the loan data into a separate associative array
-}
+include '../../payment/api/editHeader.php';
 ?>
 
 <!DOCTYPE html>
@@ -27,7 +7,7 @@ if (isset($_GET["account_number"])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title><?php echo $data['first_name'] . ' ' . $data['last_name']; ?> Repository</title>
     <!-- CDN's -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/172203/font-awesome.min.css">
@@ -170,7 +150,7 @@ if (isset($_GET["account_number"])) {
                 <div class="col-lg-12 px-md-4">
                   <div class="table-responsive">
                     <h2>Loan trails</h2>
-                      <table class="table table-hover table-bordered">
+                      <table class="table table-hover table-bordered" >
                         <thead>
                             <tr class="table-primary <?php echo ($row['remarks'] == 'Paid') ? 'paid' : ''; ?>">                              <th>#</th>
                               <th class="fw-semibold">Loan ID</th>
@@ -185,35 +165,7 @@ if (isset($_GET["account_number"])) {
                         <tbody>
                           <!-- You can fetch the user's loan data here and loop through it -->
                           <?php
-                          
-                          $sql = "SELECT c.account_number, la.loanNo, la.customer_name, la.college, la.loan_type, 
-                            la.application_date, la.application_status, la.amount_before, la.amount_after, la.remarks
-                            FROM clients c
-                            INNER JOIN loan_applications la ON la.account_number = c.account_number
-                            WHERE c.account_number = ?";
-                          $stmt = $conn->prepare($sql);
-                          $stmt->bind_param("s", $account_number);
-                          $stmt->execute();
-                          $result = $stmt->get_result();
-                          $counter = 1;
-                          if ($result->num_rows > 0){
-                            while ($row = $result->fetch_assoc()) {
-                              echo "<tr class='loan-row' data-loan-no='{$row["loanNo"]}'>";
-                              echo "<td>" . $counter . "</td>";
-                              echo "<td>" . $row["loanNo"] . "</td>";
-                              echo "<td>" . $row["customer_name"] . "</td>";
-                              echo "<td>" . $row["loan_type"] . "</td>";
-                              $date = date("F d, Y", strtotime($row["application_date"]));
-                              echo "<td>" . $date . "</td>";
-                              echo "<td>" . $row["amount_before"] . "</td>";
-                              echo "<td>" . $row["amount_after"] . "</td>";
-                              echo "<td>" . $row["remarks"] . "</td>";
-                              echo "</tr>";
-                              $counter++;
-                            }
-                          } else {
-                            echo "<tr><td colspan='9'> No loan history found </td></tr>";
-                          }
+                            include '../../payment/api/editTable.php';
                           ?>
                         </tbody>
                       </table>
@@ -222,7 +174,7 @@ if (isset($_GET["account_number"])) {
                 <!-- /Table Loan -->
                 
                 <!-- Table -->
-                <form action="/coop/Admin/Payment/api/editData.php" method="post" onsubmit="showAlert()">                  
+                <form action="/coop/Admin/Payment/api/editData.php" method="post" onsubmit="saveForm(event)" id="account-submit">                  
                   <div class="row m-3">
                   <h2>Accounting</h2>
                   <p>Loan reference number: 
@@ -316,55 +268,36 @@ if (isset($_GET["account_number"])) {
 <script src="/coop/Admin/Repositories/static/clipboard.js"></script>
 <!-- Script -->
 <script>
+document.getElementById("remarks").disabled = true;
+
 document.getElementById("balance").addEventListener("input", function () {
   var amount = parseFloat(this.value);
   var currentBalance = parseFloat(document.getElementById("currentBalance").value);
+  var totalBalance = document.getElementById("totalBalance");
+  var remarks = document.getElementById("remarks");
 
-  // Check if the amount is a valid number
-  if (isNaN(amount)) {
-    // If the amount is not a number, set the total balance to be the same as the current balance
-    document.getElementById("totalBalance").value = currentBalance.toFixed(2);
-    document.getElementById("remarks").value = "Unpaid";
+  if (isNaN(amount) || amount <= 0) {
+    totalBalance.value = currentBalance.toFixed(2);
+    remarks.value = "Unpaid";
+    alert("Warning: Invalid input. Please enter a valid positive number.");
   } else {
-    // If the amount is a valid number, perform the calculation
     var newBalance = currentBalance - amount;
-
-    // Update the "Total Balance" input field
-    document.getElementById("totalBalance").value = newBalance.toFixed(2);
-
-    // Check the balance value and update the "Remarks" select accordingly
-    if (newBalance === 0) {
-      document.getElementById("remarks").value = "Paid";
-    } else if (newBalance > 0) {
-      document.getElementById("remarks").value = "Unpaid";
-    }
+    totalBalance.value = newBalance.toFixed(2);
+    remarks.value = newBalance === 0 ? "Paid" : "Unpaid";
   }
 });
 
-  window.onload = function() {
-    <?php foreach ($data as $key => $value) : ?>
-        var element = document.getElementById("<?php echo $key; ?>Text");
-        if (element) {
-            element.textContent = "<?php echo $value; ?>";
-        }
-    <?php endforeach; ?>
-}
 
-
-// Table
-var tableRows = document.querySelectorAll(".loan-row");
-tableRows.forEach(function(row) {
-  row.addEventListener("click", function() {
-    // Get the loanNo from the clicked row
-    var loanNo = this.getAttribute("data-loan-no");
-
-    // Redirect to the same page with the loanNo as a query parameter
-    window.location.href = window.location.pathname + "?account_number=" + "<?php echo $account_number; ?>" + "&loanNo=" + loanNo;
-  });
-});
-
-function showAlert() {
-  alert("Data successfully updated!");
+function saveForm(event) {
+  var amount = parseFloat(document.getElementById("balance").value);
+  if (isNaN(amount) || amount <= 0) {
+    alert("Please enter a valid amount.");
+    return false; // Prevent the form from being submitted
+  }
+  // If the amount is valid, you can proceed with form submission or other actions
+  // Add your logic here for form submission or other actions
+  // For example, you can call a function to submit the form data
+  document.getElementById("account-submit").submit();
 }
 
 </script>

@@ -171,11 +171,13 @@ $password = "123"; // Default password is "cooperative member" with special char
                       <label for="lastName">Last Name</label>
                       <input type="text" class="form-control" name="last_name" id="last_name">
 
-                      <label for="citizenship">Citizenship</label>
-                      <input type="text" class="form-control" name="citizenship" id="citizenship">
+                      <label for="middle_name">Middle Name</label>
+                      <input type="text" class="form-control" name="middle_name" id="middle_name">
 
-                      <label for="spouse_name">Name of Spouse</label>
-                      <input type="text" class="form-control" name="spouse_name" id="spouse_name">
+                      <label for="first_name">First Name</label>
+                      <input type="text" class="form-control" name="first_name" id="first_name">
+                      
+                                           
                       <label for="city_address">City Address</label>
                       <input type="text" class="form-control" name="city_address" id="city_address">
 
@@ -185,17 +187,32 @@ $password = "123"; // Default password is "cooperative member" with special char
                       <label for="position">Work Position</label>
                       <input type="text" class="form-control" name="position" id="position">
 
-                      <label for="balance">Balance</label>
-                      <input type="text" class="form-control" name="balance" id="balance" value="0" disabled readonly>
+                      <label for="account_status">Account Status</label>
+                      <select class="form-control" name="account_status" id="account_status">
+                        <option>Active</option>
+                        <option>Not Active</option>
+                      </select>
+
+                  <!-- <label for="balance">Balance</label>
+                      <input type="text" class="form-control" name="balance" id="balance" value="0" disabled readonly> -->
                     
                     </div>
                     <div class="col-lg-4">
-                      <label for="middle_name">Middle Name</label>
-                      <input type="text" class="form-control" name="middle_name" id="middle_name">
+                    <label for="civil_status">Civil Status</label>
+                      <select class="form-control" name="civil_status" id="civil_status">
+                        <option select>Select one</option>  
+                        <option>Single</option>
+                        <option>Married</option>
+                        <option>Divorced</option>
+                        <option>Widowed</option>
+                      </select>
 
                       <label for="provincial_address">Provincial Address</label>
                       <input type="text" class="form-control" name="provincial_address" id="provincial_address">
-
+                      
+                      <label for="citizenship">Citizenship</label>
+                      <input type="text" class="form-control" name="citizenship" id="citizenship">
+                      
                       <label for="mailing_address">Mailing Address</label>
                       <input type="text" class="form-control" name="mailing_address" id="mailing_address">
 
@@ -208,25 +225,14 @@ $password = "123"; // Default password is "cooperative member" with special char
                         <option>Non-Teaching</option>
                         <option>Others</option>
                       </select>
-                      <label for="account_status">Account Status</label>
-                      <select class="form-control" name="account_status" id="account_status">
-                        <option>Active</option>
-                        <option>Not Active</option>
-                      </select>
+                      
                       </div>
 
                     <div class="col-lg-4">
-                      <label for="first_name">First Name</label>
-                      <input type="text" class="form-control" name="first_name" id="first_name">
                       
-                      <label for="civil_status">Civil Status</label>
-                      <select class="form-control" name="civil_status" id="civil_status">
-                        <option select>Select one</option>  
-                        <option>Single</option>
-                        <option>Married</option>
-                        <option>Divorced</option>
-                        <option>Widowed</option>
-                      </select>
+                      
+                    <label for="spouse_name">Name of Spouse</label>
+                      <input type="text" class="form-control" name="spouse_name" id="spouse_name">
 
                       <label for="taxID_num">Tax Identification Number</label>
                       <input type="text" class="form-control" name="taxID_num" id="taxID_num">

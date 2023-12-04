@@ -31,6 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         $remarks = "Paid Fully";
         $remarksClients = "Paid";
+        $loan_status = "No application status";
     }
 
     // Update remarks in clients table

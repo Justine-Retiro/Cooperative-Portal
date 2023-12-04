@@ -1,19 +1,7 @@
 <?php
 require_once __DIR__ . "/api/connection.php";
+include 'api/repositoriesHeader.php';
 
-if (isset($_GET["account_number"])) {
-    $account_number = $_GET["account_number"];
-    $query = "SELECT * FROM clients WHERE account_number = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $account_number);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $data = $result->fetch_assoc();
-} else {
-    // No search query, retrieve all records
-    $sql = "SELECT * FROM clients";
-    $result = $conn->query($sql);
-}
 ?>
 
 <!DOCTYPE html>
@@ -21,7 +9,7 @@ if (isset($_GET["account_number"])) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Repositories</title>
     <!-- CDN's -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/172203/font-awesome.min.css">
@@ -162,7 +150,7 @@ if (isset($_GET["account_number"])) {
                                       </button>
                                   </span> -->
                                 </div>
-                              <a href="/coop/Admin/Repositories/New/member.php"><button class="btn btn-success" id="add-mem" style="float: right;">Add</button></a>
+                              <a href="/coop/Admin/Repositories/New/member.php"><button class="btn btn-primary" id="add-mem" style="float: right;">Add member</button></a>
                           </div>
                           </div>
                         </div>
@@ -175,36 +163,15 @@ if (isset($_GET["account_number"])) {
                                   <th class='fw-medium' >Account Number</th>
                                   <th class='fw-medium' >Name</th>
                                   <th class='fw-medium' >Birth Date</th>
+                                  <th class='fw-medium' >Nature of Work</th>
                                   <th class='fw-medium' >Status</th>
+                                  <th class='fw-medium' >Amount of share</th>
+  
                                   <th class='fw-medium' >Actions</th>
                                 </tr>
                                 <?php
-                                  require_once __DIR__ . "/api/connection.php";
-
-                                  $sql = "SELECT * FROM clients";
-                                  $result = $conn->query($sql);
-
-                                  $counter = 1;
-
-                                  if ($result->num_rows > 0) {
-                                    while($row = $result->fetch_assoc()) {
-                                        echo "<tr>";
-                                        echo "<td>" . $counter . "</td>";
-                                        echo "<td>" . $row["account_number"] . "</td>";
-                                        echo "<td>" . $row["first_name"] . " " . $row["middle_name"] . " " . $row["last_name"] . "</td>";
-                                        echo "<td>" . $row["birth_date"] . "</td>";
-                                        echo "<td>" . $row["account_status"] . "</td>";
-                                        echo "<td>";
-                                        echo '<a href="/coop/Admin/Repositories/Edit/edit.php?account_number=' . $row["account_number"] . '"><button class="btn btn-success me-1">Edit</button></a>';
-                                        echo '<a href="/coop/Admin/Repositories/api/delete.php?account_number=' . $row["account_number"] . '"><button class="btn btn-danger">Delete</button></a>';                                        echo "</td>";
-                                        echo "</tr>";
-                                        $counter++;
-                                    }
-                                } else {
-                                    echo "<tr><td colspan='5'>No records found.</td></tr>";
-                                }
-                                
-                                  ?>
+                                  include 'api/fetchClients.php';
+                                ?>
                             </table>  
                         </div>
                     </div>
@@ -230,6 +197,8 @@ if (isset($_GET["account_number"])) {
 <!-- Fetching Search -->
 <script>
 
+
+// Searching Data
 $('#search-input').on('keyup', function() {
         var query = $(this).val();
         searchLoans(query);

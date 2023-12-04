@@ -1,6 +1,12 @@
 <?php
 session_start(); // Start the session
 
+// Check if the user is logged in
+if (!isset($_SESSION["account_number"])) {
+    header("Location: /coop/index.php");
+    exit();
+}
+
 require_once "globalApi/connection.php";
 ?>
 <!DOCTYPE html>
@@ -29,8 +35,13 @@ require_once "globalApi/connection.php";
                     <h2 class="me-md-5">Verification</h2>
                     <div class="row justify-content-center" >
                         <div class="col-lg-12 my-2">
+                        <div id="birthdateAlert" class="alert alert-danger mt-2 d-none" role="alert">
+
+                        </div>
                             <label for="birthdate">Birthdate</label>
                             <input type="date" class="form-control" placeholder="birthdate" name="birthdate" id="birthdate">
+                            
+                            
                             <button type="submit" class="btn btn-success mt-3 w-100">Verify</button>
                         </div>
                     </div>
@@ -41,10 +52,37 @@ require_once "globalApi/connection.php";
 
 <!-- CDN's -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 <!-- Alert validation -->
 <script>
 $(document).ready(function() {
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+
+    // Check if there's a toastr message in the session
+    // var urlParams = new URLSearchParams(window.location.search);
+    // var toastrMessage = urlParams.get('toastr');
+    // if (toastrMessage) {
+    //     // If there is, show the toastr
+    //     toastr.error(decodeURIComponent(toastrMessage));
+    // }
     $('form').on('submit', function(event) {
         event.preventDefault();
         $.ajax({
@@ -54,18 +92,43 @@ $(document).ready(function() {
             success: function(response) {
                 var data = JSON.parse(response);
                 if (data.status === 'success') {
-                    if (data.role === 'admin') {
-                        window.location.href = '/coop/Admin/Dashboard/dashboard.php';
-                    } else if (data.role === 'mem') {
-                        window.location.href = '/coop/Member/Dashboard/dashboard.php';
-                    } else {
-                        window.location.href = '/coop/';
-                    }
-                } else {
-                    // Alert for wrong birthdate
-                    alert(data.message);
+                    document.cookie = 'toastr=Successfully logged in; path=/;';
+                    setTimeout(function() {
+                        switch (data.role) {
+                            case 'admin':
+                                if (data.account_status === 'Active') {
+                                    window.location.href = '/coop/admin/dashboard/dashboard.php';
+                                } else {
+                                    window.location.href = '/coop/';
+                                }
+                                break;
+                            case 'master':
+                                if (data.account_status === 'Active') {
+                                    window.location.href = '/coop/master/dashboard/dashboard.php';
+                                } else {
+                                    window.location.href = '/coop/';
+                                }
+                                break;
+                            case 'mem':
+                                if (data.account_status === 'Active') {
+                                    window.location.href = '/coop/member/dashboard/dashboard.php';
+                                } else {
+                                    window.location.href = '/coop/';
+                                }
+                                break;
+                            default:
+                                window.location.href = '/coop/';
+                        }
+                    }, 2000);
+                } else if (data.status === 'fail') {
+                    $('#birthdateAlert').text(data.message).removeClass('d-none');
+                } else if (data.status === 'redirect') {
+                    toastr.error('Too many failed attempts. Please log in again.');
+                    setTimeout(function() {
+                        window.location.href = '/coop/index.php';
+                    }, 2000); // Delay of 2 seconds
                 }
-            },
+            }
         });
     });
 });

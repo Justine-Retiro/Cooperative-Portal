@@ -18,7 +18,7 @@ $_SESSION['balance'] = $row['balance'];
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Dashboard</title>
     <!-- CDN's -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://s3-us-west-2.amazonaws.com/s.cdpn.io/172203/font-awesome.min.css">
@@ -27,6 +27,9 @@ $_SESSION['balance'] = $row['balance'];
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+
     <!-- Style -->
     <link rel="stylesheet" href="style.css" />
 
@@ -74,7 +77,7 @@ $_SESSION['balance'] = $row['balance'];
           </div>
           <li>Menu</li>
           <li>
-            <a href="/coop/Member/Dashboard/dashboard.php">
+            <a href="/coop/member/dashboard/dashboard.php">
               <span class="fa-stack fa-lg pull-left">
                 <i class="bi bi-border-all"></i>
               </span>
@@ -82,7 +85,7 @@ $_SESSION['balance'] = $row['balance'];
             </a>
           </li>
           <li>
-            <a href="/coop/Member/Account/account.php">
+            <a href="/coop/member/account/account.php">
               <span class="fa-stack fa-lg pull-left">
                 <i class="bi bi-person"></i>
               </span>
@@ -90,7 +93,7 @@ $_SESSION['balance'] = $row['balance'];
             </a>
           </li>
           <li>
-            <a href="/coop/Member/Account/account.php">
+            <a href="/coop/member/account/account.php">
               <span class="fa-stack fa-lg pull-left">
                 <i class="bi bi-inbox"></i>
               </span>
@@ -98,7 +101,7 @@ $_SESSION['balance'] = $row['balance'];
             </a>
           </li>
           <li>
-            <a href="/coop/Member/Loan/loan.php">
+            <a href="/coop/member/loan/loan.php">
               <span class="fa-stack fa-lg pull-left"
                 ><i class="bi bi-wallet2"></i></span>
                 <span class="nav-text">Loan</span> 
@@ -205,13 +208,60 @@ $_SESSION['balance'] = $row['balance'];
         <!-- /#page-content-wrapper -->
               <!-- /#page-content-wrapper -->
     </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 
 <!-- Sidebar -->
 <script src="script.js"></script>
 
 <!-- Chart -->
-<script src="chart.js"></script>
+<script>
+$(document).ready(function() {
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "5000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+
+    // Check if there's a toastr message in the cookie
+    $(document).ready(function() {
+    // Check if there's a toastr message in the cookie
+    var toastrMessage = getCookie('toastr');
+    if (toastrMessage) {
+        // If there is, show the toastr and delete the cookie
+        toastr.success(decodeURIComponent(toastrMessage));
+        var now = new Date();
+        now.setTime(now.getTime() - 1);
+        document.cookie = 'toastr=; expires=' + now.toUTCString() + '; path=/;';
+    }
+});
+});
+// Function to get a cookie by name
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+</script>
+
 </body>
 </html>
